@@ -1,5 +1,7 @@
 package com.example.leaveflow.service;
 
+import com.example.leaveflow.dto.EmployeeResponse;
+import com.example.leaveflow.dto.CreateEmployeeRequest;
 import com.example.leaveflow.entity.Employee;
 import com.example.leaveflow.repository.EmployeeRepository;
 import org.springframework.stereotype.Service;
@@ -13,11 +15,9 @@ public class EmployeeService {
         this.employeeRepository = employeeRepository;
     }
 
-    public String getMessage() {
-        return "Hello from Sudheesh!";
-    }
-
-    public Employee createEmployee(Employee employee) {
-        return employeeRepository.save(employee);
+    public EmployeeResponse createEmployee(CreateEmployeeRequest request) {
+        Employee employee = new Employee(request.getName(), request.getEmail());
+        Employee savedEmployee = employeeRepository.save(employee);
+        return new EmployeeResponse(savedEmployee.getId(), savedEmployee.getName(), savedEmployee.getEmail());
     }
 }

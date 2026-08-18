@@ -18,17 +18,13 @@ public class Employee {
     public Employee() {
     }
 
-    public Employee(Integer id, String name, String email) {
-        this.id = id;
+    public Employee(String name, String email) {
         this.name = name;
         this.email = email;
     }
 
     public Integer getId() {
         return id;
-    }
-    public void setId(Integer id) {
-        this.id = id;
     }
     public String getName() {
         return name;

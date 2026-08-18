@@ -1,5 +1,7 @@
 package com.example.leaveflow.controller;
 
+import com.example.leaveflow.dto.EmployeeResponse;
+import com.example.leaveflow.dto.CreateEmployeeRequest;
 import com.example.leaveflow.entity.Employee;
 import com.example.leaveflow.service.EmployeeService;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,13 +18,8 @@ public class EmployeeController {
         this.employeeService = employeeService;
     }
 
-    @GetMapping("/api/v1/hello")
-    public String hello(){
-        return employeeService.getMessage();
-    }
-
     @PostMapping("/api/v1/employees")
-    public Employee createEmployee(@RequestBody Employee employee) {
-        return employeeService.createEmployee(employee);
+    public EmployeeResponse createEmployee(@RequestBody CreateEmployeeRequest request) {
+        return employeeService.createEmployee(request);
     }
 }
