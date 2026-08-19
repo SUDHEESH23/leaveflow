@@ -1,8 +1,14 @@
 package com.example.leaveflow.dto;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+
 public class CreateEmployeeRequest {
 
+    @NotBlank(message = "Name must not be blank")
     private String name;
+
+    @Email(message = "Email must be valid")
     private String email;
 
     public String getName() {
