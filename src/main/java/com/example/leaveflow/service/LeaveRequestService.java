@@ -6,6 +6,7 @@ import com.example.leaveflow.entity.Employee;
 import com.example.leaveflow.entity.LeaveRequest;
 import com.example.leaveflow.entity.LeaveStatus;
 import com.example.leaveflow.exception.EmployeeNotFoundException;
+import com.example.leaveflow.exception.LeaveRequestNotFoundException;
 import com.example.leaveflow.exception.ValidationException;
 import com.example.leaveflow.repository.EmployeeRepository;
 import com.example.leaveflow.repository.LeaveRequestRepository;
@@ -75,5 +76,33 @@ public class LeaveRequestService {
                 savedRequest.getStatus()
                 );
     }
-   
+
+    public LeaveRequestResponse getLeaveRequestById(Integer id) {
+
+        LeaveRequest leaveRequest = leaveRequestRepository.findById(id)
+                .orElseThrow(() -> new LeaveRequestNotFoundException(id));
+
+        return new LeaveRequestResponse(
+                leaveRequest.getId(),
+                leaveRequest.getEmployee().getId(),
+                leaveRequest.getStartDate(),
+                leaveRequest.getEndDate(),
+                leaveRequest.getReason(),
+                leaveRequest.getStatus()
+        );
+    }
+
+    public List<LeaveRequestResponse> getAllLeaveRequests() {
+        return leaveRequestRepository.findAll()
+                .stream()
+                .map(leaveRequest -> new LeaveRequestResponse(
+                        leaveRequest.getId(),
+                        leaveRequest.getEmployee().getId(),
+                        leaveRequest.getStartDate(),
+                        leaveRequest.getEndDate(),
+                        leaveRequest.getReason(),
+                        leaveRequest.getStatus()
+                ))
+                .toList();
+    }
 }

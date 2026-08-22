@@ -35,5 +35,19 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiError);
     }
 
+    @ExceptionHandler(LeaveRequestNotFoundException.class)
+    public ResponseEntity<ApiError> handleLeaveRequestNotFound(
+            LeaveRequestNotFoundException exception) {
+
+        ApiError apiError = new ApiError(
+                404,
+                exception.getMessage(),
+                null
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(apiError);
+    }
 
 }
