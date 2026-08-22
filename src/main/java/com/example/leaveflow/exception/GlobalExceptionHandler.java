@@ -28,6 +28,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiError);
     }
 
+    // manual validation exception handler
     @ExceptionHandler(ValidationException.class)
     public ResponseEntity<ApiError> handlePatchValidationException(ValidationException exception) {
         ApiError apiError = new ApiError(400, exception.getMessage(), exception.getErrors());
