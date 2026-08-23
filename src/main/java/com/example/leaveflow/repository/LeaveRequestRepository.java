@@ -10,9 +10,17 @@ import java.util.List;
 public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Integer> {
 
     boolean existsByEmployeeIdAndStatusInAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
-        Integer employeeId,
-        List<LeaveStatus> statuses,
-        LocalDate endDate,
-        LocalDate startDate
+            Integer employeeId,
+            List<LeaveStatus> statuses,
+            LocalDate endDate,
+            LocalDate startDate
+    );
+
+    boolean existsByEmployeeIdAndStatusInAndStartDateLessThanEqualAndEndDateGreaterThanEqualAndIdNot(
+            Integer employeeId,
+            List<LeaveStatus> statuses,
+            LocalDate endDate,
+            LocalDate startDate,
+            Integer id
     );
 }

@@ -2,6 +2,7 @@ package com.example.leaveflow.service;
 
 import com.example.leaveflow.dto.CreateLeaveRequest;
 import com.example.leaveflow.dto.LeaveRequestResponse;
+import com.example.leaveflow.dto.UpdateLeaveRequest;
 import com.example.leaveflow.entity.Employee;
 import com.example.leaveflow.entity.LeaveRequest;
 import com.example.leaveflow.entity.LeaveStatus;
@@ -45,8 +46,8 @@ public class LeaveRequestService {
         boolean overlap = leaveRequestRepository.existsByEmployeeIdAndStatusInAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
                 request.getEmployeeId(),
                 blockingStatuses,
-                request.getStartDate(),
-                request.getEndDate()
+                request.getEndDate(),
+                request.getStartDate()
         );
 
         if(overlap){
@@ -104,5 +105,58 @@ public class LeaveRequestService {
                         leaveRequest.getStatus()
                 ))
                 .toList();
+    }
+
+    public LeaveRequestResponse updateLeaveRequest(Integer id, UpdateLeaveRequest request) {
+
+        if(request.getEndDate().isBefore(request.getStartDate())){
+            Map<String, String> errors = new HashMap<>();
+            errors.put("endDate","End date must be on or after start date");
+            throw new ValidationException(errors);
+        }
+
+        LeaveRequest leaveRequest = leaveRequestRepository.findById(id)
+                .orElseThrow(() -> new LeaveRequestNotFoundException(id));
+
+        if(leaveRequest.getStatus() != LeaveStatus.PENDING){
+            Map<String, String> errors = new HashMap<>();
+            errors.put("status","Only pending leave requests can be updated");
+            throw new ValidationException(errors);
+        }
+
+        List<LeaveStatus> blockingStatuses = List.of(
+                LeaveStatus.APPROVED,
+                LeaveStatus.PENDING
+        );
+
+        boolean overlap = leaveRequestRepository.existsByEmployeeIdAndStatusInAndStartDateLessThanEqualAndEndDateGreaterThanEqualAndIdNot(
+                leaveRequest.getEmployee().getId(),
+                blockingStatuses,
+                request.getEndDate(),
+                request.getStartDate(),
+                id
+        );
+
+        if(overlap){
+            Map<String, String> errors = new HashMap<>();
+            errors.put("dates","Employee already has overlapping leave");
+            throw new ValidationException(errors);
+        }
+
+        leaveRequest.setStartDate(request.getStartDate());
+        leaveRequest.setEndDate(request.getEndDate());
+        leaveRequest.setReason(request.getReason());
+
+        LeaveRequest savedRequest = leaveRequestRepository.save(leaveRequest);
+
+        return new LeaveRequestResponse(
+                savedRequest.getId(),
+                savedRequest.getEmployee().getId(),
+                savedRequest.getStartDate(),
+                savedRequest.getEndDate(),
+                savedRequest.getReason(),
+                savedRequest.getStatus()
+        );
+
     }
 }

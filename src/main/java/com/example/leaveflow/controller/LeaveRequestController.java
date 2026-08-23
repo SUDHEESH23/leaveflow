@@ -2,6 +2,7 @@ package com.example.leaveflow.controller;
 
 import com.example.leaveflow.dto.CreateLeaveRequest;
 import com.example.leaveflow.dto.LeaveRequestResponse;
+import com.example.leaveflow.dto.UpdateLeaveRequest;
 import com.example.leaveflow.service.LeaveRequestService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
@@ -31,6 +32,14 @@ public class LeaveRequestController {
     @GetMapping
     public List<LeaveRequestResponse> getAllLeaveRequests() {
         return leaveRequestService.getAllLeaveRequests();
+    }
+
+    @PutMapping("/{id}")
+    public LeaveRequestResponse updateLeaveRequest(
+            @PathVariable Integer id,
+            @Valid @RequestBody UpdateLeaveRequest request) {
+
+        return leaveRequestService.updateLeaveRequest(id, request);
     }
 
 }
