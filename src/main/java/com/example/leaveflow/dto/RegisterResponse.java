@@ -15,7 +15,7 @@ public class RegisterResponse {
         this.role = role;
     }
 
-    private Integer getId() {
+    public Integer getId() {
         return id;
     }
 
