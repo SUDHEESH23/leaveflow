@@ -50,4 +50,16 @@ public class GlobalExceptionHandler {
                 .body(apiError);
     }
 
+    @ExceptionHandler(UserAccountAlreadyExistsException.class)
+    public ResponseEntity<ApiError> handleUserAccountAlreadyExistsException(UserAccountAlreadyExistsException exception) {
+       ApiError apiError = new ApiError(
+               409,
+               exception.getMessage(),
+               null
+       );
+       return ResponseEntity
+               .status(HttpStatus.CONFLICT)
+               .body(apiError);
+    }
+
 }

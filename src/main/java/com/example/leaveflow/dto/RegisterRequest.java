@@ -3,6 +3,7 @@ package com.example.leaveflow.dto;
 import com.example.leaveflow.entity.UserRole;
 
 public class RegisterRequest {
+
     private String email;
     private String password;
 
@@ -18,7 +19,5 @@ public class RegisterRequest {
         this.email = email;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
+    public void setPassword(String password) { this.password = password; }
 }
