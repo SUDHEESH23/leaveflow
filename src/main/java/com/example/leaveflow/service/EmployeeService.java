@@ -9,15 +9,18 @@ import com.example.leaveflow.dto.CreateEmployeeRequest;
 import com.example.leaveflow.entity.Employee;
 import com.example.leaveflow.exception.ValidationException;
 import com.example.leaveflow.repository.EmployeeRepository;
+import com.example.leaveflow.repository.UserAccountRepository;
 import org.springframework.stereotype.Service;
 
 @Service
 public class EmployeeService {
 
     private final EmployeeRepository employeeRepository;
+    private final UserAccountRepository userAccountRepository;
 
-    public EmployeeService(EmployeeRepository employeeRepository) {
+    public EmployeeService(EmployeeRepository employeeRepository, UserAccountRepository userAccountRepository) {
         this.employeeRepository = employeeRepository;
+        this.userAccountRepository = userAccountRepository;
     }
 
     public EmployeeResponse createEmployee(CreateEmployeeRequest request) {

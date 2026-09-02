@@ -1,9 +1,6 @@
 package com.example.leaveflow.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
+import jakarta.persistence.*;
 
 @Entity
 public class Employee {
@@ -14,6 +11,10 @@ public class Employee {
 
     private String name;
     private String email;
+
+    @ManyToOne
+    @JoinColumn(name = "manager_id")
+    private Employee manager;
 
     public Employee() {
     }
@@ -38,4 +39,6 @@ public class Employee {
     public void setEmail(String email) {
         this.email = email;
     }
+    public Employee getManager() { return manager; }
+    public void setManager(Employee manager) { this.manager = manager; }
 }

@@ -62,4 +62,13 @@ public class JwtService {
                 .getPayload()
                 .getSubject();
     }
+
+    public String extractRole(String token) {
+        return Jwts.parser()
+                .verifyWith(Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8)))
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .get("role", String.class);
+    }
 }

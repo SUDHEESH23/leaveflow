@@ -24,7 +24,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleValidationException(MethodArgumentNotValidException exception) {
         Map<String, String> errors = new HashMap<>();
         exception.getBindingResult().getFieldErrors().forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
-        ApiError apiError = new ApiError(404, "Validation failed.", errors);
+        ApiError apiError = new ApiError(400, "Validation failed.", errors);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiError);
     }
 
@@ -60,6 +60,21 @@ public class GlobalExceptionHandler {
        return ResponseEntity
                .status(HttpStatus.CONFLICT)
                .body(apiError);
+    }
+
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<ApiError> handleForbiddenException(
+            ForbiddenException ex) {
+
+        ApiError error = new ApiError(
+                403,
+                ex.getMessage(),
+                null
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(error);
     }
 
 }

@@ -42,4 +42,18 @@ public class LeaveRequestController {
         return leaveRequestService.updateLeaveRequest(id, request);
     }
 
+    @PostMapping("/{id}/approve")
+    public LeaveRequestResponse approveLeaveRequest(
+            @PathVariable Integer id) {
+
+        return leaveRequestService.approveLeaveRequest(id);
+    }
+
+    @PostMapping("/{id}/reject")
+    public LeaveRequestResponse rejectLeaveRequest(
+            @PathVariable Integer id) {
+
+        return leaveRequestService.rejectLeaveRequest(id);
+    }
+
 }

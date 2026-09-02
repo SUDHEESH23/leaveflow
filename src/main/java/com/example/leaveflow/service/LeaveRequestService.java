@@ -7,10 +7,13 @@ import com.example.leaveflow.entity.Employee;
 import com.example.leaveflow.entity.LeaveRequest;
 import com.example.leaveflow.entity.LeaveStatus;
 import com.example.leaveflow.exception.EmployeeNotFoundException;
+import com.example.leaveflow.exception.ForbiddenException;
 import com.example.leaveflow.exception.LeaveRequestNotFoundException;
 import com.example.leaveflow.exception.ValidationException;
 import com.example.leaveflow.repository.EmployeeRepository;
 import com.example.leaveflow.repository.LeaveRequestRepository;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -158,5 +161,81 @@ public class LeaveRequestService {
                 savedRequest.getStatus()
         );
 
+    }
+
+    public LeaveRequestResponse approveLeaveRequest(Integer id) {
+
+        LeaveRequest leaveRequest = leaveRequestRepository.findById(id)
+                .orElseThrow(() -> new LeaveRequestNotFoundException(id));
+
+        verifyManagerCanActOn(leaveRequest);
+
+        if (leaveRequest.getStatus() != LeaveStatus.PENDING) {
+            Map<String, String> errors = new HashMap<>();
+            errors.put("status", "Only pending leave requests can be approved");
+            throw new ValidationException(errors);
+        }
+
+        leaveRequest.setStatus(LeaveStatus.APPROVED);
+
+        LeaveRequest savedRequest = leaveRequestRepository.save(leaveRequest);
+
+        return new LeaveRequestResponse(
+                savedRequest.getId(),
+                savedRequest.getEmployee().getId(),
+                savedRequest.getStartDate(),
+                savedRequest.getEndDate(),
+                savedRequest.getReason(),
+                savedRequest.getStatus()
+        );
+    }
+
+    public LeaveRequestResponse rejectLeaveRequest(Integer id) {
+
+        LeaveRequest leaveRequest = leaveRequestRepository.findById(id)
+                .orElseThrow(() -> new LeaveRequestNotFoundException(id));
+
+        verifyManagerCanActOn(leaveRequest);
+
+        if (leaveRequest.getStatus() != LeaveStatus.PENDING) {
+            Map<String, String> errors = new HashMap<>();
+            errors.put("status", "Only pending leave requests can be rejected");
+            throw new ValidationException(errors);
+        }
+
+        leaveRequest.setStatus(LeaveStatus.REJECTED);
+
+        LeaveRequest savedRequest = leaveRequestRepository.save(leaveRequest);
+
+        return new LeaveRequestResponse(
+                savedRequest.getId(),
+                savedRequest.getEmployee().getId(),
+                savedRequest.getStartDate(),
+                savedRequest.getEndDate(),
+                savedRequest.getReason(),
+                savedRequest.getStatus()
+        );
+    }
+
+    private void verifyManagerCanActOn(LeaveRequest leaveRequest) {
+
+        String currentUserEmail =
+                SecurityContextHolder.getContext()
+                        .getAuthentication()
+                        .getName();
+
+        Employee currentManager = employeeRepository
+                .findByEmail(currentUserEmail)
+                .orElseThrow(() ->
+                        new IllegalStateException(
+                                "Authenticated manager does not have an employee record"));
+
+        if (leaveRequest.getEmployee().getManager() == null ||
+                !leaveRequest.getEmployee().getManager().getId()
+                        .equals(currentManager.getId())) {
+
+            throw new ForbiddenException(
+                    "You are not allowed to act on this leave request");
+        }
     }
 }
