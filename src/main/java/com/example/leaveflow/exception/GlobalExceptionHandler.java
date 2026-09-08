@@ -77,4 +77,34 @@ public class GlobalExceptionHandler {
                 .body(error);
     }
 
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<ApiError> handleInvalidCredentials(
+            InvalidCredentialsException exception) {
+
+        ApiError apiError = new ApiError(
+                401,
+                exception.getMessage(),
+                null
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(apiError);
+    }
+
+    @ExceptionHandler(ManagerAccountNotFoundException.class)
+    public ResponseEntity<ApiError> handleManagerAccountNotFound(
+            ManagerAccountNotFoundException exception) {
+
+        ApiError apiError = new ApiError(
+                500,
+                exception.getMessage(),
+                null
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(apiError);
+    }
+
 }

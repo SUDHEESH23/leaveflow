@@ -39,8 +39,10 @@ public class SecurityConfig {
                                 .requestMatchers(
                                         "/api/v1/leave-requests/*/approve",
                                         "/api/v1/leave-requests/*/reject"
-                                )
-                                .hasRole("MANAGER")
+                                ).hasRole("MANAGER")
+                                .requestMatchers(
+                                        "/api/v1/employees/*/manager"
+                                ).hasRole("ADMIN")
                                 .anyRequest().authenticated()
                 );
 

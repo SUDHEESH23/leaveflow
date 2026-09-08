@@ -1,12 +1,13 @@
 package com.example.leaveflow.service;
 
 import java.util.*;
-import com.example.leaveflow.dto.PatchEmployeeRequest;
-import com.example.leaveflow.dto.UpdateEmployeeRequest;
+
+import com.example.leaveflow.dto.*;
+import com.example.leaveflow.entity.UserAccount;
+import com.example.leaveflow.entity.UserRole;
 import com.example.leaveflow.exception.EmployeeNotFoundException;
-import com.example.leaveflow.dto.EmployeeResponse;
-import com.example.leaveflow.dto.CreateEmployeeRequest;
 import com.example.leaveflow.entity.Employee;
+import com.example.leaveflow.exception.ManagerAccountNotFoundException;
 import com.example.leaveflow.exception.ValidationException;
 import com.example.leaveflow.repository.EmployeeRepository;
 import com.example.leaveflow.repository.UserAccountRepository;
@@ -34,7 +35,10 @@ public class EmployeeService {
         return new EmployeeResponse(
                 savedEmployee.getId(),
                 savedEmployee.getName(),
-                savedEmployee.getEmail()
+                savedEmployee.getEmail(),
+                employee.getManager() != null
+                        ? employee.getManager().getId()
+                        : null
         );
     }
 
@@ -46,7 +50,10 @@ public class EmployeeService {
         return new EmployeeResponse(
                 employee.getId(),
                 employee.getName(),
-                employee.getEmail()
+                employee.getEmail(),
+                employee.getManager() != null
+                        ? employee.getManager().getId()
+                        : null
         );
     }
 
@@ -57,7 +64,10 @@ public class EmployeeService {
                 .map(employee -> new EmployeeResponse(
                         employee.getId(),
                         employee.getName(),
-                        employee.getEmail()
+                        employee.getEmail(),
+                        employee.getManager() != null
+                                ? employee.getManager().getId()
+                                : null
                 ))
                 .toList();
     }
@@ -77,7 +87,10 @@ public class EmployeeService {
         return new EmployeeResponse(
                 savedEmployee.getId(),
                 savedEmployee.getName(),
-                savedEmployee.getEmail()
+                savedEmployee.getEmail(),
+                employee.getManager() != null
+                        ? employee.getManager().getId()
+                        : null
         );
     }
 
@@ -124,7 +137,10 @@ public class EmployeeService {
         return new EmployeeResponse(
                 savedEmployee.getId(),
                 savedEmployee.getName(),
-                savedEmployee.getEmail()
+                savedEmployee.getEmail(),
+                employee.getManager() != null
+                        ? employee.getManager().getId()
+                        : null
         );
     }
 
@@ -133,5 +149,47 @@ public class EmployeeService {
         Employee employee = employeeRepository.findById(id).orElseThrow(() -> new EmployeeNotFoundException(id));
 
         employeeRepository.delete(employee);
+    }
+
+    public EmployeeResponse assignManager(
+            Integer employeeId,
+            AssignManagerRequest request) {
+
+        Employee employee = employeeRepository.findById(employeeId)
+                .orElseThrow(() ->
+                        new EmployeeNotFoundException(employeeId));
+
+        Employee manager = employeeRepository.findById(request.getManagerId())
+                .orElseThrow(() ->
+                        new EmployeeNotFoundException(request.getManagerId()));
+
+        UserAccount managerAccount = userAccountRepository
+                .findByEmail(manager.getEmail())
+                .orElseThrow(() ->
+                        new ManagerAccountNotFoundException(manager.getEmail()));
+
+        if (managerAccount.getRole() != UserRole.MANAGER) {
+            throw new ValidationException(
+                    Map.of("managerId", "Selected employee is not a manager"));
+        }
+
+        if (employee.getId().equals(manager.getId())) {
+            throw new ValidationException(
+                    Map.of("managerId", "An employee cannot be their own manager")
+            );
+        }
+
+        employee.setManager(manager);
+
+        Employee savedEmployee = employeeRepository.save(employee);
+
+        return new EmployeeResponse(
+                savedEmployee.getId(),
+                savedEmployee.getName(),
+                savedEmployee.getEmail(),
+                employee.getManager() != null
+                        ? employee.getManager().getId()
+                        : null
+        );
     }
 }

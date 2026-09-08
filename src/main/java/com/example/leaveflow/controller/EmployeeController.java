@@ -2,17 +2,15 @@ package com.example.leaveflow.controller;
 
 import java.util.List;
 
-import com.example.leaveflow.dto.PatchEmployeeRequest;
+import com.example.leaveflow.dto.*;
 import jakarta.validation.Valid;
-import com.example.leaveflow.dto.UpdateEmployeeRequest;
-import com.example.leaveflow.dto.EmployeeResponse;
-import com.example.leaveflow.dto.CreateEmployeeRequest;
 import com.example.leaveflow.entity.Employee;
 import com.example.leaveflow.service.EmployeeService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequestMapping("/api/v1")
 public class EmployeeController {
 
     private final EmployeeService employeeService;
@@ -21,22 +19,22 @@ public class EmployeeController {
         this.employeeService = employeeService;
     }
 
-    @GetMapping("/api/v1/employees/{id}")
+    @GetMapping("/employees/{id}")
     public EmployeeResponse getEmployeeById(@PathVariable Integer id) {
         return employeeService.getEmployeeById(id);
     }
 
-    @PostMapping("/api/v1/employees")
+    @PostMapping("/employees")
     public EmployeeResponse createEmployee( @Valid @RequestBody CreateEmployeeRequest request) {
         return employeeService.createEmployee(request);
     }
 
-    @GetMapping("/api/v1/employees")
+    @GetMapping("/employees")
     public List<EmployeeResponse> getAllEmployees() {
         return employeeService.getAllEmployees();
     }
 
-    @PutMapping("/api/v1/employees/{id}")
+    @PutMapping("/employees/{id}")
     public EmployeeResponse updateEmployee(
             @PathVariable Integer id,
             @Valid @RequestBody UpdateEmployeeRequest request) {
@@ -44,7 +42,7 @@ public class EmployeeController {
         return employeeService.updateEmployee(id, request);
     }
 
-    @PatchMapping("/api/v1/employees/{id}")
+    @PatchMapping("/employees/{id}")
     public EmployeeResponse patchEmployee(
             @PathVariable Integer id,
             @RequestBody PatchEmployeeRequest request) {
@@ -52,9 +50,17 @@ public class EmployeeController {
         return employeeService.patchEmployee(id, request);
     }
 
-    @DeleteMapping("/api/v1/employees/{id}")
+    @DeleteMapping("/employees/{id}")
     public ResponseEntity<Void> deleteEmployee(@PathVariable Integer id) {
         employeeService.deleteEmployee(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/employees/{employeeId}/manager")
+    public EmployeeResponse assignManager(
+            @PathVariable Integer employeeId,
+            @Valid @RequestBody AssignManagerRequest request) {
+
+        return employeeService.assignManager(employeeId, request);
     }
 }

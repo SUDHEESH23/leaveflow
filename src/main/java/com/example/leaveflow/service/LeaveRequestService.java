@@ -6,34 +6,40 @@ import com.example.leaveflow.dto.UpdateLeaveRequest;
 import com.example.leaveflow.entity.Employee;
 import com.example.leaveflow.entity.LeaveRequest;
 import com.example.leaveflow.entity.LeaveStatus;
-import com.example.leaveflow.exception.EmployeeNotFoundException;
-import com.example.leaveflow.exception.ForbiddenException;
-import com.example.leaveflow.exception.LeaveRequestNotFoundException;
-import com.example.leaveflow.exception.ValidationException;
+import com.example.leaveflow.exception.*;
 import com.example.leaveflow.repository.EmployeeRepository;
 import com.example.leaveflow.repository.LeaveRequestRepository;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.time.LocalDate;
 
 @Service
 public class LeaveRequestService {
 
     private final LeaveRequestRepository leaveRequestRepository;
     private final EmployeeRepository employeeRepository;
+    private final AuthorizationService authorizationService;
 
     public LeaveRequestService(
             LeaveRequestRepository leaveRequestRepository,
-            EmployeeRepository employeeRepository){
+            EmployeeRepository employeeRepository,
+            AuthorizationService authorizationService){
         this.leaveRequestRepository = leaveRequestRepository;
         this.employeeRepository = employeeRepository;
+        this.authorizationService = authorizationService;
     }
 
     public LeaveRequestResponse createLeaveRequest(CreateLeaveRequest request) {
+
+        if (request.getStartDate().isBefore(LocalDate.now())) {
+            throw new ValidationException(
+                    Map.of("startDate", "Leave cannot start before today")
+            );
+        }
 
         if(request.getEndDate().isBefore(request.getStartDate())){
             Map<String, String> errors = new HashMap<>();
@@ -41,13 +47,15 @@ public class LeaveRequestService {
             throw new ValidationException(errors);
         }
 
+        Employee employee = authorizationService.getCurrentEmployee();
+
         List<LeaveStatus> blockingStatuses = List.of(
                LeaveStatus.APPROVED,
                LeaveStatus.PENDING
         );
 
         boolean overlap = leaveRequestRepository.existsByEmployeeIdAndStatusInAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
-                request.getEmployeeId(),
+                employee.getId(),
                 blockingStatuses,
                 request.getEndDate(),
                 request.getStartDate()
@@ -58,9 +66,6 @@ public class LeaveRequestService {
             errors.put("dates","Employee already has overlapping leave");
             throw new ValidationException(errors);
         }
-
-        Employee employee = employeeRepository.findById(request.getEmployeeId())
-                .orElseThrow(() -> new EmployeeNotFoundException(request.getEmployeeId()));
 
         LeaveRequest leaveRequest = new LeaveRequest(
                 request.getStartDate(),
@@ -112,6 +117,12 @@ public class LeaveRequestService {
 
     public LeaveRequestResponse updateLeaveRequest(Integer id, UpdateLeaveRequest request) {
 
+        if (request.getStartDate().isBefore(LocalDate.now())) {
+            throw new ValidationException(
+                    Map.of("startDate", "Leave cannot start before today")
+            );
+        }
+
         if(request.getEndDate().isBefore(request.getStartDate())){
             Map<String, String> errors = new HashMap<>();
             errors.put("endDate","End date must be on or after start date");
@@ -120,6 +131,8 @@ public class LeaveRequestService {
 
         LeaveRequest leaveRequest = leaveRequestRepository.findById(id)
                 .orElseThrow(() -> new LeaveRequestNotFoundException(id));
+
+        authorizationService.verifyEmployeeOwnsLeave(leaveRequest);
 
         if(leaveRequest.getStatus() != LeaveStatus.PENDING){
             Map<String, String> errors = new HashMap<>();

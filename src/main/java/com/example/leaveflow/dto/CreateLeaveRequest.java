@@ -7,9 +7,6 @@ import java.time.LocalDate;
 
 public class CreateLeaveRequest {
 
-    @NotNull(message = "Employee ID is required")
-    private Integer employeeId;
-
     @NotNull(message = "Start date is required")
     private LocalDate startDate;
 
@@ -41,13 +38,5 @@ public class CreateLeaveRequest {
 
     public void setReason(String reason) {
         this.reason = reason;
-    }
-
-    public Integer getEmployeeId() {
-        return employeeId;
-    }
-
-    public void setEmployeeId(Integer employeeId){
-        this.employeeId = employeeId;
     }
 }
