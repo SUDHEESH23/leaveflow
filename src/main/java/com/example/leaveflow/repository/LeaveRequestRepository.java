@@ -23,4 +23,8 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Inte
             LocalDate startDate,
             Integer id
     );
+
+    List<LeaveRequest> findByEmployeeId(Integer employeeId);
+
+    List<LeaveRequest> findByEmployeeManagerId(Integer managerId);
 }

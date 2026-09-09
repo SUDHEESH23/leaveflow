@@ -91,6 +91,8 @@ public class LeaveRequestService {
         LeaveRequest leaveRequest = leaveRequestRepository.findById(id)
                 .orElseThrow(() -> new LeaveRequestNotFoundException(id));
 
+        authorizationService.verifyCanViewLeave(leaveRequest);
+
         return new LeaveRequestResponse(
                 leaveRequest.getId(),
                 leaveRequest.getEmployee().getId(),
