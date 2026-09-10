@@ -107,4 +107,19 @@ public class GlobalExceptionHandler {
                 .body(apiError);
     }
 
+    @ExceptionHandler(EmployeeAccountNotLinkedException.class)
+    public ResponseEntity<ApiError> handleEmployeeAccountNotLinked(
+            EmployeeAccountNotLinkedException exception) {
+
+        ApiError apiError = new ApiError(
+                500,
+                exception.getMessage(),
+                null
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(apiError);
+    }
+
 }

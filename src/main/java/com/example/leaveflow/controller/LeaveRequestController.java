@@ -56,4 +56,11 @@ public class LeaveRequestController {
         return leaveRequestService.rejectLeaveRequest(id);
     }
 
+    @PostMapping("{id}/cancel")
+    public LeaveRequestResponse cancelLeaveRequest(
+            @PathVariable Integer id
+    ){
+        return leaveRequestService.cancelLeaveRequest(id);
+    }
+
 }

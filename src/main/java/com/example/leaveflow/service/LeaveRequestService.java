@@ -6,12 +6,13 @@ import com.example.leaveflow.dto.UpdateLeaveRequest;
 import com.example.leaveflow.entity.Employee;
 import com.example.leaveflow.entity.LeaveRequest;
 import com.example.leaveflow.entity.LeaveStatus;
+import com.example.leaveflow.entity.UserRole;
 import com.example.leaveflow.exception.*;
 import com.example.leaveflow.repository.EmployeeRepository;
 import com.example.leaveflow.repository.LeaveRequestRepository;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -104,7 +105,38 @@ public class LeaveRequestService {
     }
 
     public List<LeaveRequestResponse> getAllLeaveRequests() {
-        return leaveRequestRepository.findAll()
+
+        UserRole role = authorizationService.getCurrentUserRole();
+
+        List<LeaveRequest> leaveRequests;
+
+        switch (role){
+            case ADMIN:
+                leaveRequests = leaveRequestRepository.findAll();
+                break;
+            case MANAGER:
+                Employee manager = authorizationService.getCurrentEmployee();
+
+                List<LeaveRequest> ownLeaves =
+                        leaveRequestRepository.findByEmployeeId(manager.getId());
+
+                List<LeaveRequest> teamLeaves =
+                        leaveRequestRepository.findByEmployeeManagerId(manager.getId());
+
+                leaveRequests = new ArrayList<>(ownLeaves);
+                leaveRequests.addAll(teamLeaves);
+
+                break;
+            case EMPLOYEE:
+                Employee employee = authorizationService.getCurrentEmployee();
+                leaveRequests = leaveRequestRepository
+                        .findByEmployeeId(employee.getId());
+                break;
+            default:
+                throw new IllegalStateException("Unsupported user role.");
+
+        }
+        return leaveRequests
                 .stream()
                 .map(leaveRequest -> new LeaveRequestResponse(
                         leaveRequest.getId(),
@@ -183,7 +215,7 @@ public class LeaveRequestService {
         LeaveRequest leaveRequest = leaveRequestRepository.findById(id)
                 .orElseThrow(() -> new LeaveRequestNotFoundException(id));
 
-        verifyManagerCanActOn(leaveRequest);
+        authorizationService.verifyManagerCanActOn(leaveRequest);
 
         if (leaveRequest.getStatus() != LeaveStatus.PENDING) {
             Map<String, String> errors = new HashMap<>();
@@ -210,7 +242,7 @@ public class LeaveRequestService {
         LeaveRequest leaveRequest = leaveRequestRepository.findById(id)
                 .orElseThrow(() -> new LeaveRequestNotFoundException(id));
 
-        verifyManagerCanActOn(leaveRequest);
+        authorizationService.verifyManagerCanActOn(leaveRequest);
 
         if (leaveRequest.getStatus() != LeaveStatus.PENDING) {
             Map<String, String> errors = new HashMap<>();
@@ -232,25 +264,34 @@ public class LeaveRequestService {
         );
     }
 
-    private void verifyManagerCanActOn(LeaveRequest leaveRequest) {
+    public LeaveRequestResponse cancelLeaveRequest(Integer id) {
 
-        String currentUserEmail =
-                SecurityContextHolder.getContext()
-                        .getAuthentication()
-                        .getName();
+        LeaveRequest leaveRequest = leaveRequestRepository.findById(id)
+                .orElseThrow(() -> new LeaveRequestNotFoundException(id));
 
-        Employee currentManager = employeeRepository
-                .findByEmail(currentUserEmail)
-                .orElseThrow(() ->
-                        new IllegalStateException(
-                                "Authenticated manager does not have an employee record"));
+        authorizationService.verifyEmployeeOwnsLeave(leaveRequest);
 
-        if (leaveRequest.getEmployee().getManager() == null ||
-                !leaveRequest.getEmployee().getManager().getId()
-                        .equals(currentManager.getId())) {
-
-            throw new ForbiddenException(
-                    "You are not allowed to act on this leave request");
+        if (leaveRequest.getStatus() != LeaveStatus.PENDING) {
+            throw new ValidationException(
+                    Map.of(
+                            "status",
+                            "Only pending leave requests can be cancelled"
+                    )
+            );
         }
+
+        leaveRequest.setStatus(LeaveStatus.CANCELLED);
+
+        LeaveRequest savedRequest =
+                leaveRequestRepository.save(leaveRequest);
+
+        return new LeaveRequestResponse(
+                savedRequest.getId(),
+                savedRequest.getEmployee().getId(),
+                savedRequest.getStartDate(),
+                savedRequest.getEndDate(),
+                savedRequest.getReason(),
+                savedRequest.getStatus()
+        );
     }
 }

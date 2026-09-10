@@ -15,18 +15,16 @@ import org.springframework.stereotype.Service;
 public class AuthorizationService {
 
     private final EmployeeRepository employeeRepository;
-    private final UserAccountRepository userAccountRepository;
 
     public AuthorizationService(
             EmployeeRepository employeeRepository,
             UserAccountRepository userAccountRepository
     ){
         this.employeeRepository = employeeRepository;
-        this.userAccountRepository = userAccountRepository;
     }
 
     public Employee getCurrentEmployee() {
-        String currentUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        String currentUserEmail = getCurrentAuthentication().getName();
         return employeeRepository.findByEmail(currentUserEmail).orElseThrow(
                 () -> new EmployeeAccountNotLinkedException(currentUserEmail)
         );
@@ -86,6 +84,19 @@ public class AuthorizationService {
                 .orElseThrow(() ->
                         new IllegalStateException(
                                 "Authenticated user has no valid role"));
+    }
+
+    public void verifyManagerCanActOn(LeaveRequest leaveRequest) {
+
+        Employee currentManager = getCurrentEmployee();
+
+        if (leaveRequest.getEmployee().getManager() == null ||
+                !leaveRequest.getEmployee().getManager().getId()
+                        .equals(currentManager.getId())) {
+
+            throw new ForbiddenException(
+                    "You are not allowed to act on this leave request");
+        }
     }
 
 }
