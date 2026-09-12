@@ -18,13 +18,18 @@ public class EmployeeService {
 
     private final EmployeeRepository employeeRepository;
     private final UserAccountRepository userAccountRepository;
+    private final AuthorizationService authorizationService;
 
-    public EmployeeService(EmployeeRepository employeeRepository, UserAccountRepository userAccountRepository) {
+    public EmployeeService(EmployeeRepository employeeRepository, UserAccountRepository userAccountRepository, AuthorizationService authorizationService) {
         this.employeeRepository = employeeRepository;
         this.userAccountRepository = userAccountRepository;
+        this.authorizationService = authorizationService;
     }
 
     public EmployeeResponse createEmployee(CreateEmployeeRequest request) {
+
+        authorizationService.verifyAdmin();
+
         Employee employee = new Employee(
                 request.getName(),
                 request.getEmail()
@@ -47,6 +52,8 @@ public class EmployeeService {
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new EmployeeNotFoundException(id));
 
+        authorizationService.verifyCanViewEmployee(employee);
+
         return new EmployeeResponse(
                 employee.getId(),
                 employee.getName(),
@@ -59,7 +66,39 @@ public class EmployeeService {
 
     public List<EmployeeResponse> getAllEmployees() {
 
-        return employeeRepository.findAll()
+        UserRole role = authorizationService.getCurrentUserRole();
+
+        List<Employee> employees;
+
+        switch (role) {
+
+            case ADMIN:
+                employees = employeeRepository.findAll();
+                break;
+
+            case MANAGER:
+                Employee manager = authorizationService.getCurrentEmployee();
+
+                List<Employee> reports =
+                        employeeRepository.findByManagerId(manager.getId());
+
+                employees = new ArrayList<>();
+                employees.add(manager);
+                employees.addAll(reports);
+                break;
+
+            case EMPLOYEE:
+                employees = List.of(
+                        authorizationService.getCurrentEmployee()
+                );
+                break;
+
+            default:
+                throw new IllegalStateException("Unsupported user role.");
+        }
+
+
+        return employees
                 .stream()
                 .map(employee -> new EmployeeResponse(
                         employee.getId(),
@@ -76,6 +115,9 @@ public class EmployeeService {
             Integer id,
             UpdateEmployeeRequest request
     ) {
+
+        authorizationService.verifyAdmin();
+
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new EmployeeNotFoundException(id));
 
@@ -97,6 +139,8 @@ public class EmployeeService {
     public EmployeeResponse patchEmployee(
             Integer id,
             PatchEmployeeRequest request) {
+
+        authorizationService.verifyAdmin();
 
         Map<String, String> errors = new HashMap<>();
 
@@ -146,6 +190,8 @@ public class EmployeeService {
 
     public void deleteEmployee(Integer id) {
 
+        authorizationService.verifyAdmin();
+
         Employee employee = employeeRepository.findById(id).orElseThrow(() -> new EmployeeNotFoundException(id));
 
         employeeRepository.delete(employee);
@@ -154,6 +200,8 @@ public class EmployeeService {
     public EmployeeResponse assignManager(
             Integer employeeId,
             AssignManagerRequest request) {
+
+        authorizationService.verifyAdmin();
 
         Employee employee = employeeRepository.findById(employeeId)
                 .orElseThrow(() ->

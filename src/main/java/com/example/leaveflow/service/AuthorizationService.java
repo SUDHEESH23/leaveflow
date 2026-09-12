@@ -48,13 +48,9 @@ public class AuthorizationService {
 
     public void verifyCanViewLeave(LeaveRequest leaveRequest) {
 
-        Authentication authentication = getCurrentAuthentication();
+        UserRole role = getCurrentUserRole();
 
-        boolean isAdmin = authentication.getAuthorities()
-                .stream()
-                .anyMatch(authority -> authority.getAuthority()
-                        .equals("ROLE_ADMIN"));
-        if(isAdmin){
+        if (role == UserRole.ADMIN) {
             return;
         }
 
@@ -96,6 +92,33 @@ public class AuthorizationService {
 
             throw new ForbiddenException(
                     "You are not allowed to act on this leave request");
+        }
+    }
+
+    public void verifyCanViewEmployee(Employee employee) {
+
+        UserRole role = getCurrentUserRole();
+
+        if(role == UserRole.ADMIN){
+            return;
+        }
+
+        Employee currentEmployee = getCurrentEmployee();
+
+        boolean isSelf = employee.getId().equals(currentEmployee.getId());
+
+        boolean isManagerOfEmployee = employee.getManager() != null && employee.getManager().getId().equals(currentEmployee.getId());
+
+        if(!isSelf && !isManagerOfEmployee){
+            throw new ForbiddenException("You are not allowed to view this employee.");
+        }
+
+    }
+
+    public void verifyAdmin() {
+
+        if (getCurrentUserRole() != UserRole.ADMIN) {
+            throw new ForbiddenException("Admin access required");
         }
     }
 
