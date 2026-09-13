@@ -2,6 +2,8 @@ package com.example.leaveflow.repository;
 
 import com.example.leaveflow.entity.LeaveRequest;
 import com.example.leaveflow.entity.LeaveStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDate;
@@ -24,7 +26,8 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Inte
             Integer id
     );
 
-    List<LeaveRequest> findByEmployeeId(Integer employeeId);
+    Page<LeaveRequest> findByEmployeeId(Integer employeeId,
+                                        Pageable pageable  );
 
     List<LeaveRequest> findByEmployeeManagerId(Integer managerId);
 }

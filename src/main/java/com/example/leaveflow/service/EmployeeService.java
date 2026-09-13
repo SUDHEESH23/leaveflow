@@ -11,6 +11,7 @@ import com.example.leaveflow.exception.ManagerAccountNotFoundException;
 import com.example.leaveflow.exception.ValidationException;
 import com.example.leaveflow.repository.EmployeeRepository;
 import com.example.leaveflow.repository.UserAccountRepository;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -64,7 +65,7 @@ public class EmployeeService {
         );
     }
 
-    public List<EmployeeResponse> getAllEmployees() {
+    public List<EmployeeResponse> getAllEmployees(Pageable pageable) {
 
         UserRole role = authorizationService.getCurrentUserRole();
 

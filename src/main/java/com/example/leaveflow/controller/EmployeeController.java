@@ -6,6 +6,7 @@ import com.example.leaveflow.dto.*;
 import jakarta.validation.Valid;
 import com.example.leaveflow.entity.Employee;
 import com.example.leaveflow.service.EmployeeService;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,8 +31,8 @@ public class EmployeeController {
     }
 
     @GetMapping("/employees")
-    public List<EmployeeResponse> getAllEmployees() {
-        return employeeService.getAllEmployees();
+    public List<EmployeeResponse> getAllEmployees(Pageable pageable) {
+        return employeeService.getAllEmployees(pageable);
     }
 
     @PutMapping("/employees/{id}")
