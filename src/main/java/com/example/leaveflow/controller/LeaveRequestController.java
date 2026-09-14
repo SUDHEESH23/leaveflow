@@ -5,6 +5,8 @@ import com.example.leaveflow.dto.LeaveRequestResponse;
 import com.example.leaveflow.dto.UpdateLeaveRequest;
 import com.example.leaveflow.service.LeaveRequestService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,8 +32,8 @@ public class LeaveRequestController {
     }
 
     @GetMapping
-    public List<LeaveRequestResponse> getAllLeaveRequests() {
-        return leaveRequestService.getAllLeaveRequests();
+    public Page<LeaveRequestResponse> getAllLeaveRequests(Pageable pageable) {
+        return leaveRequestService.getAllLeaveRequests(pageable);
     }
 
     @PutMapping("/{id}")

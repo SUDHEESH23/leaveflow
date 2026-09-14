@@ -10,6 +10,8 @@ import com.example.leaveflow.entity.UserRole;
 import com.example.leaveflow.exception.*;
 import com.example.leaveflow.repository.EmployeeRepository;
 import com.example.leaveflow.repository.LeaveRequestRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -104,40 +106,36 @@ public class LeaveRequestService {
         );
     }
 
-    public List<LeaveRequestResponse> getAllLeaveRequests() {
+    public Page<LeaveRequestResponse> getAllLeaveRequests(Pageable pageable) {
 
         UserRole role = authorizationService.getCurrentUserRole();
 
-        List<LeaveRequest> leaveRequests;
+        Page<LeaveRequest> leaveRequests;
 
         switch (role){
             case ADMIN:
-                leaveRequests = leaveRequestRepository.findAll();
+                leaveRequests = leaveRequestRepository.findAll(pageable);
                 break;
             case MANAGER:
                 Employee manager = authorizationService.getCurrentEmployee();
 
-                List<LeaveRequest> ownLeaves =
-                        leaveRequestRepository.findByEmployeeId(manager.getId());
-
-                List<LeaveRequest> teamLeaves =
-                        leaveRequestRepository.findByEmployeeManagerId(manager.getId());
-
-                leaveRequests = new ArrayList<>(ownLeaves);
-                leaveRequests.addAll(teamLeaves);
+                leaveRequests = leaveRequestRepository.findByEmployeeIdOrEmployeeManagerId(
+                        manager.getId(),
+                        manager.getId(),
+                        pageable
+                );
 
                 break;
             case EMPLOYEE:
                 Employee employee = authorizationService.getCurrentEmployee();
                 leaveRequests = leaveRequestRepository
-                        .findByEmployeeId(employee.getId());
+                        .findByEmployeeId(employee.getId(), pageable);
                 break;
             default:
                 throw new IllegalStateException("Unsupported user role.");
 
         }
         return leaveRequests
-                .stream()
                 .map(leaveRequest -> new LeaveRequestResponse(
                         leaveRequest.getId(),
                         leaveRequest.getEmployee().getId(),
@@ -145,8 +143,7 @@ public class LeaveRequestService {
                         leaveRequest.getEndDate(),
                         leaveRequest.getReason(),
                         leaveRequest.getStatus()
-                ))
-                .toList();
+                ));
     }
 
     public LeaveRequestResponse updateLeaveRequest(Integer id, UpdateLeaveRequest request) {

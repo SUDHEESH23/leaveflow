@@ -65,7 +65,7 @@ public class EmployeeService {
         );
     }
 
-    public List<EmployeeResponse> getAllEmployees(Pageable pageable) {
+    public List<EmployeeResponse> getAllEmployees() {
 
         UserRole role = authorizationService.getCurrentUserRole();
 

@@ -29,5 +29,11 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Inte
     Page<LeaveRequest> findByEmployeeId(Integer employeeId,
                                         Pageable pageable  );
 
+    Page<LeaveRequest> findByEmployeeIdOrEmployeeManagerId(
+            Integer employeeId,
+            Integer managerId,
+            Pageable pageable
+    );
+
     List<LeaveRequest> findByEmployeeManagerId(Integer managerId);
 }

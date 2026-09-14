@@ -31,8 +31,8 @@ public class EmployeeController {
     }
 
     @GetMapping("/employees")
-    public List<EmployeeResponse> getAllEmployees(Pageable pageable) {
-        return employeeService.getAllEmployees(pageable);
+    public List<EmployeeResponse> getAllEmployees() {
+        return employeeService.getAllEmployees();
     }
 
     @PutMapping("/employees/{id}")
