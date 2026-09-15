@@ -13,6 +13,7 @@ import com.example.leaveflow.repository.LeaveRequestRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -207,6 +208,7 @@ public class LeaveRequestService {
 
     }
 
+    @Transactional
     public LeaveRequestResponse approveLeaveRequest(Integer id) {
 
         LeaveRequest leaveRequest = leaveRequestRepository.findById(id)
