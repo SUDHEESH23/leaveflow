@@ -37,6 +37,7 @@ public class LeaveRequestService {
         this.authorizationService = authorizationService;
     }
 
+    @Transactional
     public LeaveRequestResponse createLeaveRequest(CreateLeaveRequest request) {
 
         if (request.getStartDate().isBefore(LocalDate.now())) {
@@ -147,6 +148,7 @@ public class LeaveRequestService {
                 ));
     }
 
+    @Transactional
     public LeaveRequestResponse updateLeaveRequest(Integer id, UpdateLeaveRequest request) {
 
         if (request.getStartDate().isBefore(LocalDate.now())) {
@@ -236,6 +238,7 @@ public class LeaveRequestService {
         );
     }
 
+    @Transactional
     public LeaveRequestResponse rejectLeaveRequest(Integer id) {
 
         LeaveRequest leaveRequest = leaveRequestRepository.findById(id)
@@ -263,6 +266,7 @@ public class LeaveRequestService {
         );
     }
 
+    @Transactional
     public LeaveRequestResponse cancelLeaveRequest(Integer id) {
 
         LeaveRequest leaveRequest = leaveRequestRepository.findById(id)
