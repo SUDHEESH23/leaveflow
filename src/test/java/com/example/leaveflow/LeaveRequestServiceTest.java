@@ -7,6 +7,7 @@ import com.example.leaveflow.entity.LeaveRequest;
 import com.example.leaveflow.entity.LeaveStatus;
 import com.example.leaveflow.exception.ForbiddenException;
 import com.example.leaveflow.exception.LeaveRequestNotFoundException;
+import com.example.leaveflow.exception.ValidationException;
 import com.example.leaveflow.repository.EmployeeRepository;
 import com.example.leaveflow.repository.LeaveRequestRepository;
 import com.example.leaveflow.service.AuthorizationService;
@@ -135,8 +136,108 @@ public class LeaveRequestServiceTest {
 
         UpdateLeaveRequest request = new UpdateLeaveRequest();
         request.setStartDate(LocalDate.of(2026, 11, 29));
-        request.setEndDate(LocalDate.of(2026, 11, 30));
+        request.setEndDate(LocalDate.of(2026, 11, 28));
         request.setReason("Updated vacation");
+
+//        when(leaveRequestRepository.findById(10))
+//                .thenReturn(Optional.of(leaveRequest));
+//
+//        when(leaveRequest.getStatus())
+//                .thenReturn(LeaveStatus.PENDING);
+//
+//        when(leaveRequest.getEmployee())
+//                .thenReturn(employee);
+//
+//        when(employee.getId())
+//                .thenReturn(7);
+//
+//        when(leaveRequestRepository
+//                .existsByEmployeeIdAndStatusInAndStartDateLessThanEqualAndEndDateGreaterThanEqualAndIdNot(
+//                        eq(7),
+//                        anyList(),
+//                        eq(request.getEndDate()),
+//                        eq(request.getStartDate()),
+//                        eq(10)
+//                ))
+//                .thenReturn(false);
+//
+//        when(leaveRequestRepository.save(leaveRequest))
+//                .thenReturn(leaveRequest);
+//
+//        when(leaveRequest.getId())
+//                .thenReturn(10);
+//
+//        when(leaveRequest.getStartDate())
+//                .thenReturn(request.getStartDate());
+//
+//        when(leaveRequest.getEndDate())
+//                .thenReturn(request.getEndDate());
+//
+//        when(leaveRequest.getReason())
+//                .thenReturn(request.getReason());
+
+        // Act
+
+//        LeaveRequestResponse response =
+//                leaveRequestService.updateLeaveRequest(10, request);
+
+        // Assert
+
+//        assertEquals(10, response.getId());
+//        assertEquals(7, response.getEmployeeId());
+//        assertEquals(
+//                LocalDate.of(2026, 11, 29),
+//                response.getStartDate()
+//        );
+//        assertEquals(
+//                LocalDate.of(2026, 11, 30),
+//                response.getEndDate()
+//        );
+//        assertEquals("Updated vacation", response.getReason());
+
+        assertThrows(
+                ValidationException.class,
+                () -> leaveRequestService.updateLeaveRequest(10, request)
+        );
+
+        // Verify
+
+//        verify(leaveRequestRepository).findById(10);
+//        verify(authorizationService).verifyEmployeeOwnsLeave(leaveRequest);
+//        verify(leaveRequestRepository).save(leaveRequest);
+    }
+
+    @Test
+    void shouldThrowWhenUpdatingNonExistingLeaveRequest() {
+
+        // Arrange
+        UpdateLeaveRequest request = new UpdateLeaveRequest();
+
+        request.setStartDate(LocalDate.of(2026, 11, 29));
+        request.setEndDate(LocalDate.of(2026, 11, 30));
+        request.setReason("Vacation");
+
+        when(leaveRequestRepository.findById(999))
+                .thenReturn(Optional.empty());
+
+        // Act + Assert
+        assertThrows(
+                LeaveRequestNotFoundException.class,
+                () -> leaveRequestService.updateLeaveRequest(999, request)
+        );
+
+        // Verify
+        verify(leaveRequestRepository).findById(999);
+    }
+
+    @Test
+    void shouldRejectOverlappingLeave() {
+
+        // Arrange
+        UpdateLeaveRequest request = new UpdateLeaveRequest();
+        request.setStartDate(LocalDate.of(2026, 11, 29));
+        request.setEndDate(LocalDate.of(2026, 11, 30));
+        request.setReason("Vacation");
 
         when(leaveRequestRepository.findById(10))
                 .thenReturn(Optional.of(leaveRequest));
@@ -158,46 +259,19 @@ public class LeaveRequestServiceTest {
                         eq(request.getStartDate()),
                         eq(10)
                 ))
-                .thenReturn(false);
+                .thenReturn(true);
 
-        when(leaveRequestRepository.save(leaveRequest))
-                .thenReturn(leaveRequest);
-
-        when(leaveRequest.getId())
-                .thenReturn(10);
-
-        when(leaveRequest.getStartDate())
-                .thenReturn(request.getStartDate());
-
-        when(leaveRequest.getEndDate())
-                .thenReturn(request.getEndDate());
-
-        when(leaveRequest.getReason())
-                .thenReturn(request.getReason());
-
-        // Act
-
-        LeaveRequestResponse response =
-                leaveRequestService.updateLeaveRequest(10, request);
-
-        // Assert
-
-        assertEquals(10, response.getId());
-        assertEquals(7, response.getEmployeeId());
-        assertEquals(
-                LocalDate.of(2026, 11, 29),
-                response.getStartDate()
+        // Act + Assert
+        assertThrows(
+                ValidationException.class,
+                () -> leaveRequestService.updateLeaveRequest(10, request)
         );
-        assertEquals(
-                LocalDate.of(2026, 11, 30),
-                response.getEndDate()
-        );
-        assertEquals("Updated vacation", response.getReason());
 
         // Verify
-
         verify(leaveRequestRepository).findById(10);
-        verify(authorizationService).verifyEmployeeOwnsLeave(leaveRequest);
-        verify(leaveRequestRepository).save(leaveRequest);
+        verify(authorizationService)
+                .verifyEmployeeOwnsLeave(leaveRequest);
+        verify(leaveRequestRepository, never())
+                .save(leaveRequest);
     }
 }
