@@ -1,4 +1,4 @@
-package com.example.leaveflow;
+package com.example.leaveflow.service;
 
 import com.example.leaveflow.dto.LeaveRequestResponse;
 import com.example.leaveflow.dto.UpdateLeaveRequest;
@@ -10,8 +10,6 @@ import com.example.leaveflow.exception.LeaveRequestNotFoundException;
 import com.example.leaveflow.exception.ValidationException;
 import com.example.leaveflow.repository.EmployeeRepository;
 import com.example.leaveflow.repository.LeaveRequestRepository;
-import com.example.leaveflow.service.AuthorizationService;
-import com.example.leaveflow.service.LeaveRequestService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

@@ -1,6 +1,5 @@
-package com.example.leaveflow;
+package com.example.leaveflow.controller;
 
-import com.example.leaveflow.controller.LeaveRequestController;
 import com.example.leaveflow.dto.CreateLeaveRequest;
 import com.example.leaveflow.dto.LeaveRequestResponse;
 import com.example.leaveflow.entity.LeaveStatus;
