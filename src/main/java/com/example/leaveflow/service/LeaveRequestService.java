@@ -91,6 +91,7 @@ public class LeaveRequestService {
                 );
     }
 
+    @Transactional(readOnly = true)
     public LeaveRequestResponse getLeaveRequestById(Integer id) {
 
         LeaveRequest leaveRequest = leaveRequestRepository.findById(id)
@@ -108,6 +109,7 @@ public class LeaveRequestService {
         );
     }
 
+    @Transactional(readOnly = true)
     public Page<LeaveRequestResponse> getAllLeaveRequests(Pageable pageable) {
 
         UserRole role = authorizationService.getCurrentUserRole();

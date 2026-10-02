@@ -13,6 +13,7 @@ import com.example.leaveflow.repository.EmployeeRepository;
 import com.example.leaveflow.repository.UserAccountRepository;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class EmployeeService {
@@ -27,6 +28,7 @@ public class EmployeeService {
         this.authorizationService = authorizationService;
     }
 
+    @Transactional
     public EmployeeResponse createEmployee(CreateEmployeeRequest request) {
 
         authorizationService.verifyAdmin();
@@ -48,6 +50,7 @@ public class EmployeeService {
         );
     }
 
+    @Transactional(readOnly = true)
     public EmployeeResponse getEmployeeById(Integer id) {
 
         Employee employee = employeeRepository.findById(id)
@@ -65,6 +68,7 @@ public class EmployeeService {
         );
     }
 
+    @Transactional(readOnly = true)
     public List<EmployeeResponse> getAllEmployees() {
 
         UserRole role = authorizationService.getCurrentUserRole();
@@ -112,6 +116,7 @@ public class EmployeeService {
                 .toList();
     }
 
+    @Transactional
     public EmployeeResponse updateEmployee(
             Integer id,
             UpdateEmployeeRequest request
@@ -137,6 +142,7 @@ public class EmployeeService {
         );
     }
 
+    @Transactional
     public EmployeeResponse patchEmployee(
             Integer id,
             PatchEmployeeRequest request) {
@@ -189,6 +195,7 @@ public class EmployeeService {
         );
     }
 
+    @Transactional
     public void deleteEmployee(Integer id) {
 
         authorizationService.verifyAdmin();
