@@ -120,7 +120,7 @@ class LeaveRequestIntegrationTest {
     }
 
     @Test
-//    @WithMockUser(username = "employee@test.com", roles = "EMPLOYEE")
+    @WithMockUser(username = "employee@test.com", roles = "EMPLOYEE")
     void employeeShouldNotApproveLeaveRequest() throws Exception {
 
         mockMvc.perform(
@@ -130,7 +130,7 @@ class LeaveRequestIntegrationTest {
     }
 
     @Test
-//    @WithMockUser(username = "manager@test.com", roles = "MANAGER")
+    @WithMockUser(username = "manager@test.com", roles = "MANAGER")
     void managerShouldBeAllowedToApproveLeaveRequest() throws Exception {
 
         mockMvc.perform(

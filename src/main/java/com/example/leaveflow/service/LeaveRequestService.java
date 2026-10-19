@@ -53,7 +53,10 @@ public class LeaveRequestService {
             throw new ValidationException(errors);
         }
 
-        Employee employee = authorizationService.getCurrentEmployee();
+        String currentUserEmail = authorizationService.getCurrentAuthentication().getName();
+
+        Employee employee = employeeRepository.findByEmailForUpdate(currentUserEmail)
+                .orElseThrow(() -> new EmployeeAccountNotLinkedException(currentUserEmail));
 
         List<LeaveStatus> blockingStatuses = List.of(
                LeaveStatus.APPROVED,
@@ -166,8 +169,13 @@ public class LeaveRequestService {
             throw new ValidationException(errors);
         }
 
-        LeaveRequest leaveRequest = leaveRequestRepository.findById(id)
+        LeaveRequest leaveRequest = leaveRequestRepository.findByIdForUpdate(id)
                 .orElseThrow(() -> new LeaveRequestNotFoundException(id));
+
+        Employee employee = employeeRepository
+                .findByIdForUpdate(leaveRequest.getEmployee().getId())
+                .orElseThrow(() ->
+                        new IllegalStateException("Employee not found"));
 
         authorizationService.verifyEmployeeOwnsLeave(leaveRequest);
 
@@ -183,7 +191,7 @@ public class LeaveRequestService {
         );
 
         boolean overlap = leaveRequestRepository.existsByEmployeeIdAndStatusInAndStartDateLessThanEqualAndEndDateGreaterThanEqualAndIdNot(
-                leaveRequest.getEmployee().getId(),
+                employee.getId(),
                 blockingStatuses,
                 request.getEndDate(),
                 request.getStartDate(),
@@ -217,7 +225,7 @@ public class LeaveRequestService {
     @PreAuthorize("hasRole('MANAGER')")
     public LeaveRequestResponse approveLeaveRequest(Integer id) {
 
-        LeaveRequest leaveRequest = leaveRequestRepository.findById(id)
+        LeaveRequest leaveRequest = leaveRequestRepository.findByIdForUpdate(id)
                 .orElseThrow(() -> new LeaveRequestNotFoundException(id));
 
         authorizationService.verifyManagerCanActOn(leaveRequest);
@@ -246,7 +254,7 @@ public class LeaveRequestService {
     @PreAuthorize("hasRole('MANAGER')")
     public LeaveRequestResponse rejectLeaveRequest(Integer id) {
 
-        LeaveRequest leaveRequest = leaveRequestRepository.findById(id)
+        LeaveRequest leaveRequest = leaveRequestRepository.findByIdForUpdate(id)
                 .orElseThrow(() -> new LeaveRequestNotFoundException(id));
 
         authorizationService.verifyManagerCanActOn(leaveRequest);
@@ -274,7 +282,7 @@ public class LeaveRequestService {
     @Transactional
     public LeaveRequestResponse cancelLeaveRequest(Integer id) {
 
-        LeaveRequest leaveRequest = leaveRequestRepository.findById(id)
+        LeaveRequest leaveRequest = leaveRequestRepository.findByIdForUpdate(id)
                 .orElseThrow(() -> new LeaveRequestNotFoundException(id));
 
         authorizationService.verifyEmployeeOwnsLeave(leaveRequest);
