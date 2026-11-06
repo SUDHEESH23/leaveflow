@@ -3,8 +3,12 @@ package com.example.leaveflow.exception;
 import org.apache.coyote.Response;
 import com.example.leaveflow.exception.ApiError;
 import com.example.leaveflow.exception.ValidationException;
+
 import java.util.Map;
 import java.util.HashMap;
+
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
@@ -120,6 +124,24 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(apiError);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+
+    public ResponseEntity<ApiError> handleAccessDeniedException(AccessDeniedException ex){
+
+        ApiError error = new ApiError(403, ex.getMessage(), null);
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
+
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ApiError> hanldeAuthenticationException(AuthenticationException ex){
+
+        ApiError error = new ApiError(401, ex.getMessage(), null);
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
     }
 
 }

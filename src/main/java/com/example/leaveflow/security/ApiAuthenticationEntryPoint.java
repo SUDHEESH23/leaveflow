@@ -1,5 +1,7 @@
 package com.example.leaveflow.security;
 
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 import tools.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -13,10 +15,10 @@ import java.util.Map;
 @Component
 public class ApiAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
-    private final ObjectMapper objectMapper;
+    private final HandlerExceptionResolver resolver;
 
-    public ApiAuthenticationEntryPoint(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
+    public ApiAuthenticationEntryPoint(@Qualifier("handlerExceptionResolver") HandlerExceptionResolver resolver) {
+        this.resolver = resolver;
     }
 
     @Override
@@ -26,16 +28,6 @@ public class ApiAuthenticationEntryPoint implements AuthenticationEntryPoint {
             AuthenticationException authException
     ) throws IOException {
 
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-
-        Map<String, Object> body = Map.of(
-                "status", 401,
-                "error", "Unauthorized",
-                "message", "Authentication is required"
-        );
-
-        objectMapper.writeValue(response.getWriter(), body);
+        resolver.resolveException(request, response, null, authException);
     }
 }
